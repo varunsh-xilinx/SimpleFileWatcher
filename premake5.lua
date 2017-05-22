@@ -4,10 +4,10 @@ configuration "windows"
 workspace "SimpleFileWatcherAll"
 	configurations { "Debug", "Release" }
 	location("build/" .. _ACTION)
-	
+
 	-- Ensure compiling for C++11 under gmake
 	if (_ACTION == "gmake") then
-		buildoptions {"-std=c++11", "pthread"}
+		buildoptions {"-std=c++11", "-pthread"}
 		links {"pthread"}
 	end
 
@@ -23,11 +23,11 @@ workspace "SimpleFileWatcherAll"
 		filter "configurations:Debug"
 			defines { "DEBUG" }
 			symbols "On"
-			
+
 		filter "configurations:Release"
 			defines { "NDEBUG" }
 			optimize "On"
-		
+
 	-- A project defines one build target
 	project "SimpleDemo"
 		location("build/" .. _ACTION .. "/SimpleDemo")
@@ -37,15 +37,15 @@ workspace "SimpleFileWatcherAll"
 		files {
 			"SimpleDemo.cpp"
 		}
-		
+
 		links {"SimpleFileWatcher"}
 		includedirs { "include" }
-		
+
 		defines {"WIN_USE_WSTR"}
 		filter "configurations:Debug"
 			defines { "DEBUG" }
 			symbols "On"
-			
+
 		filter "configurations:Release"
 			defines { "NDEBUG" }
 			optimize "On"
