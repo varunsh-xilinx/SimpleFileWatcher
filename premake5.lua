@@ -14,16 +14,16 @@ workspace "SimpleFileWatcherAll"
 	
 
 		configuration "Debug"
-			defines { "DEBUG" }
+			defines { "DEBUG", "WIN_USE_WSTR" }
 			filter { "platforms:x64" }
-				defines { "DEBUG", "SFW_64_BIT" }
+				defines { "DEBUG", "SFW_64_BIT", "WIN_USE_WSTR" }
 			
 			symbols "On"
 			
 		configuration "Release"
-			defines { "NDEBUG" }
+			defines { "NDEBUG", "WIN_USE_WSTR" }
 			filter { "platforms:x64" }
-				defines { "NDEBUG", "SFW_64_BIT" }
+				defines { "NDEBUG", "SFW_64_BIT", "WIN_USE_WSTR" }
 			optimize "On"
 		
 	-- A project defines one build target
@@ -39,16 +39,16 @@ workspace "SimpleFileWatcherAll"
 		includedirs { "include" }
 		
 		configuration "Debug"
-			defines { "DEBUG" }
+			defines { "DEBUG", "WIN_USE_WSTR" }
 			filter { "platforms:x64" }
-				defines { "DEBUG", "SFW_64_BIT" }
+				defines { "DEBUG", "SFW_64_BIT", "WIN_USE_WSTR" }
 			
 			symbols "On"
 			
 		configuration "Release"
-			defines { "NDEBUG" }
+			defines { "NDEBUG", "WIN_USE_WSTR" }
 			filter { "platforms:x64" }
-				defines { "NDEBUG", "SFW_64_BIT" }
+				defines { "NDEBUG", "SFW_64_BIT", "WIN_USE_WSTR" }
 			optimize "On"
 
 workspace "SimpleFileWatcherAll"

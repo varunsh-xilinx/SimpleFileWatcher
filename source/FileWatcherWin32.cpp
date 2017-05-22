@@ -27,7 +27,7 @@
 #define _WIN32_WINNT 0x0550
 #include <windows.h>
 
-#ifdef SFW_64_BIT
+#ifdef WIN_USE_WSTR
 typedef std::wstring WAPI_STR;
 #else
 typedef std::string WAPI_STR;
@@ -35,10 +35,10 @@ typedef std::string WAPI_STR;
 
 WAPI_STR to_w_str(const std::string& str)
 {
-#ifdef SFW_64_BIT
+#ifdef WIN_USE_WSTR
 	WAPI_STR ret(str.length(), '0');
 	
-	for (int i = 0; i < str.length(); ++i)
+	for (size_t i = 0; i < str.length(); ++i)
 		ret[i] = str[i];
 
 	return ret;
@@ -49,10 +49,10 @@ WAPI_STR to_w_str(const std::string& str)
 
 std::string to_str(const WAPI_STR& str)
 {
-#ifdef SFW_64_BIT
+#ifdef WIN_USE_WSTR
 	std::string ret(str.length(), '0');
 
-	for (int i = 0; i < str.length(); ++i)
+	for (size_t i = 0; i < str.length(); ++i)
 		ret[i] = (char)str[i];
 
 	return ret;
