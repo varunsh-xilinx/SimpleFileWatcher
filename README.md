@@ -45,8 +45,11 @@ able to safely access the file's contents.
 
 
 ## Credits
-Written by James Wynn
+Originally written by James Wynn
 Contact: james@jameswynn.com
 
-The most recent version can be located at:
+Fixes and Buffered/AsyncFileWatcher by Ian Diaz
+Contact: shadowndacorner@gmail.com
+
+James Wynn's original code can be located at:
 http://simplefilewatcher.googlecode.com
