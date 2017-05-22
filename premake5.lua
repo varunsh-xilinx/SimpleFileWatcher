@@ -9,7 +9,7 @@ workspace "SimpleFileWatcherAll"
 		location("build/" .. _ACTION .. "/SimpleFileWatcher")
 		kind "StaticLib"
 		language "C++"
-		files {"source/*.cpp"}
+		files {"source/*.cpp", "include/FileSystemWatcher/*.h", "include/FileSystemWatcher/*.hpp"}
 		includedirs {"include"}
 		targetdir "lib/%{cfg.buildcfg}"
 

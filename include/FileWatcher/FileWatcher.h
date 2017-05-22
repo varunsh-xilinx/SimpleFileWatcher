@@ -32,6 +32,9 @@
 
 #include <string>
 #include <stdexcept>
+#include <thread>
+#include <mutex>
+#include <queue>
 
 namespace FW
 {
@@ -123,6 +126,96 @@ namespace FW
 
 	};//end FileWatcher
 
+	enum cmd_type
+	{
+		AddWatch,
+		RemoveWatchStr,
+		RemoveWatchID
+	};
+
+	struct command_struct
+	{
+		String path;
+		union
+		{
+			struct
+			{
+				FileWatchListener* watcher;
+				bool recursive;
+				WatchID* target;
+			} Add;
+
+			struct
+			{
+				WatchID id;
+			} RemoveID;
+		};
+
+		cmd_type Type;
+	};
+
+	class BufferedFileWatcher
+	{
+	public:
+		BufferedFileWatcher();
+		virtual ~BufferedFileWatcher();
+
+	public:
+		/// Add a directory watch. Same as the other addWatch, but doesn't have recursive option.
+		/// For backwards compatibility.
+		/// @exception FileNotFoundException Thrown when the requested directory does not exist
+		void addWatch(const String& directory, FileWatchListener* watcher, WatchID* target = nullptr);
+
+		/// Add a directory watch
+		/// @exception FileNotFoundException Thrown when the requested directory does not exist
+		void addWatch(const String& directory, FileWatchListener* watcher, bool recursive, WatchID* target = nullptr);
+
+		/// Remove a directory watch. This is a brute force search O(nlogn).
+		void removeWatch(const String& directory);
+
+		/// Remove a directory watch. This is a map lookup O(logn).
+		void removeWatch(WatchID watchid);
+
+		/// Updates the watcher. Must be called often.
+		void update();
+
+	private:
+		FileWatcher m_watcher;
+		std::mutex m_mutex;
+		std::queue<command_struct> m_commands;
+	};
+
+	class AsyncFileWatcher
+	{
+		friend void async_filewatcher_thread(AsyncFileWatcher* args);
+	public:
+		AsyncFileWatcher();
+		virtual ~AsyncFileWatcher();
+
+	public:
+		/// Add a directory watch. Same as the other addWatch, but doesn't have recursive option.
+		/// For backwards compatibility.
+		/// @exception FileNotFoundException Thrown when the requested directory does not exist
+		void addWatch(const String& directory, FileWatchListener* watcher, WatchID* target = nullptr);
+
+		/// Add a directory watch
+		/// @exception FileNotFoundException Thrown when the requested directory does not exist
+		void addWatch(const String& directory, FileWatchListener* watcher, bool recursive, WatchID* target = nullptr);
+
+		/// Remove a directory watch. This is a brute force search O(nlogn).
+		void removeWatch(const String& directory);
+
+		/// Remove a directory watch. This is a map lookup O(logn).
+		void removeWatch(WatchID watchid);
+
+		/// Updates the watcher. Must be called often.
+		void update();
+
+	private:
+		BufferedFileWatcher m_watch;
+		std::thread m_thr;
+		bool m_running;
+	};
 
 	/// Basic interface for listening for file events.
 	/// @class FileWatchListener
