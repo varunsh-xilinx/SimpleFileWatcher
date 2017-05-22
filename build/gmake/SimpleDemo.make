@@ -19,12 +19,12 @@ ifeq ($(config),debug)
   INCLUDES += -I../../include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
-  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -g
-  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -g
+  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS)
+  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS)
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += ../../bin/Debug/libSimpleFileWatcher.a
-  LDDEPS += ../../bin/Debug/libSimpleFileWatcher.a
-  ALL_LDFLAGS += $(LDFLAGS)
+  LIBS += ../../lib/Debug/libSimpleFileWatcher.a
+  LDDEPS += ../../lib/Debug/libSimpleFileWatcher.a
+  ALL_LDFLAGS += $(LDFLAGS) -s
   LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
@@ -46,11 +46,11 @@ ifeq ($(config),release)
   INCLUDES += -I../../include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
-  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -O2
-  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -O2
+  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS)
+  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS)
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += ../../bin/Release/libSimpleFileWatcher.a
-  LDDEPS += ../../bin/Release/libSimpleFileWatcher.a
+  LIBS += ../../lib/Release/libSimpleFileWatcher.a
+  LDDEPS += ../../lib/Release/libSimpleFileWatcher.a
   ALL_LDFLAGS += $(LDFLAGS) -s
   LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS

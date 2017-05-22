@@ -10,7 +10,7 @@ workspace "SimpleFileWatcherAll"
 		language "C++"
 		files {"source/*.cpp"}
 		includedirs {"include"}
-		targetdir "bin/%{cfg.buildcfg}"
+		targetdir "lib/%{cfg.buildcfg}"
 	
 
 		configuration "Debug"
