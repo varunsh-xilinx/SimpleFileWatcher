@@ -1,9 +1,15 @@
 configuration "windows"
-   platforms {"Win32", "x64"}
+	platforms {"Win32", "x64"}
 
 workspace "SimpleFileWatcherAll"
 	configurations { "Debug", "Release" }
 	location("build/" .. _ACTION)
+	
+	-- Ensure compiling for C++11 under gmake
+	if (_ACTION == "gmake") then
+		buildoptions {"-std=c++11", "pthread"}
+		links {"pthread"}
+	end
 
 	project "SimpleFileWatcher"
 		location("build/" .. _ACTION .. "/SimpleFileWatcher")

@@ -196,11 +196,11 @@ namespace FW
 		/// Add a directory watch. Same as the other addWatch, but doesn't have recursive option.
 		/// For backwards compatibility.
 		/// @exception FileNotFoundException Thrown when the requested directory does not exist
-		void addWatch(const String& directory, FileWatchListener* watcher, WatchID* target = nullptr);
+		void addWatch(const String& directory, FileWatchListener* watcher, WatchID* target = NULL);
 
 		/// Add a directory watch
 		/// @exception FileNotFoundException Thrown when the requested directory does not exist
-		void addWatch(const String& directory, FileWatchListener* watcher, bool recursive, WatchID* target = nullptr);
+		void addWatch(const String& directory, FileWatchListener* watcher, bool recursive, WatchID* target = NULL);
 
 		/// Remove a directory watch. This is a brute force search O(nlogn).
 		void removeWatch(const String& directory);

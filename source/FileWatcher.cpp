@@ -89,8 +89,7 @@ namespace FW
 		{
 			watcher.update();
 
-			using namespace std::chrono_literals;
-			std::this_thread::sleep_for(50ms);
+			std::this_thread::sleep_for(std::chrono::milliseconds(50));
 		}
 	}
 
@@ -155,7 +154,7 @@ namespace FW
 				case AddWatch:
 				{
 					auto ret = m_watcher.addWatch(cmd.path, cmd.Add.watcher, cmd.Add.recursive);
-					if (cmd.Add.target != nullptr)
+					if (cmd.Add.target != NULL)
 						*cmd.Add.target = ret;
 					break;
 				}
