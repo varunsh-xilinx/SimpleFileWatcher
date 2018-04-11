@@ -1,0 +1,35 @@
+set(SFW_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+file(
+	GLOB SFW_INCLUDES 
+	"${SFW_INCLUDE_DIR}/FileWatcher/*.h"
+)
+
+if (WIN32)
+	set(
+		SFW_SOURCES
+		"${CMAKE_CURRENT_SOURCE_DIR}/FileWatcher.cpp"
+		"${CMAKE_CURRENT_SOURCE_DIR}/FileWatcherWin32.cpp"
+	)
+	
+	add_definitions(-DMINGINE_WIN32)
+ELSEIF(UNIX)
+	set(
+		SFW_SOURCES 
+		"${CMAKE_CURRENT_SOURCE_DIR}/FileWatcher.cpp"
+		"${CMAKE_CURRENT_SOURCE_DIR}/FileWatcherLinux.cpp"
+	)
+ELSEIF(APPLE)
+	set(
+		SFW_SOURCES 
+		"${CMAKE_CURRENT_SOURCE_DIR}/FileWatcher.cpp"
+		"${CMAKE_CURRENT_SOURCE_DIR}/FileWatcherOSX.cpp"
+	)
+ENDIF()
+
+add_library(sfw_lib ${SFW_SOURCES})
+
+include_directories(
+	sfw_lib
+	${SFW_INCLUDE_DIR}
+)
