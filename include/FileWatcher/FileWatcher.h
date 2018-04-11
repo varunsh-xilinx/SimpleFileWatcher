@@ -147,6 +147,7 @@ namespace FW
 
 	struct FileWatcherEvent
 	{
+		WatchID id;
 		String dir;
 		String filename;
 		Actions::Action action;
@@ -161,7 +162,7 @@ namespace FW
 			inline Listener(PollingFileWatcher& watcher) : m_watcher(watcher){}
 
 		public:
-			virtual void handleFileAction(WatchID watchid, const String& dir, const String& filename, Action action);
+			virtual void handleFileAction(WatchID watchid, const String& dir, const String& filename, Action action) override final;
 		
 		private:
 			PollingFileWatcher& m_watcher;
@@ -192,23 +193,46 @@ namespace FW
 		}
 
 	public:
-		inline void addWatch(const String& path, bool recursive)
+		inline WatchID addWatch(const String& path, bool recursive)
 		{
 			std::lock_guard<std::mutex> lock(m_mutex);
+			WatchID id = m_watcher.addWatch(path, &m_listener, recursive);
 			m_watches.insert({
 				path,
-				m_watcher.addWatch(path, &m_listener, recursive)
+				id
 			});
+			return id;
 		}
 
 		inline void removeWatch(const String& path)
 		{
+			std::lock_guard<std::mutex> lock(m_mutex);
 			if (m_watches.count(path) > 0)
 			{
+				std::lock_guard<std::mutex> lock(m_mutex);
 				auto ret = m_watches.at(path);
 				m_watches.erase(path);
 				m_watcher.removeWatch(ret);
 			}
+		}
+
+		inline void removeWatch(const WatchID& id)
+		{
+			std::lock_guard<std::mutex> lock(m_mutex);
+			for (auto it : m_watches)
+			{
+				if (it.second == id)
+				{
+					m_watches.erase(it.first);
+					m_watcher.removeWatch(id);
+					return;
+				}
+			}
+		}
+
+		inline void update()
+		{
+			// no-op
 		}
 
 		inline bool poll(FileWatcherEvent& ev)
@@ -248,6 +272,99 @@ namespace FW
 		std::queue<FileWatcherEvent> m_events;
 		std::unordered_map<std::string, WatchID> m_watches;
 		int m_updaterate;
+	};
+
+	class SingleThreadedPollingFileWatcher
+	{
+		class Listener : public FileWatchListener
+		{
+		public:
+			inline Listener(SingleThreadedPollingFileWatcher& watcher) : m_watcher(watcher) {}
+
+		public:
+			virtual void handleFileAction(WatchID watchid, const String& dir, const String& filename, Action action) override final;
+
+		private:
+			SingleThreadedPollingFileWatcher & m_watcher;
+		};
+
+		friend class SingleThreadedPollingFileWatcher::Listener;
+	public:
+		inline SingleThreadedPollingFileWatcher() :
+			m_listener(*this)
+		{
+		}
+
+		inline ~SingleThreadedPollingFileWatcher()
+		{
+		}
+
+	public:
+		inline WatchID addWatch(const String& path, bool recursive)
+		{
+			WatchID id = m_watcher.addWatch(path, &m_listener, recursive);
+			m_watches.insert({
+				path,
+				id
+				});
+			return id;
+		}
+
+		inline void removeWatch(const String& path)
+		{
+			if (m_watches.count(path) > 0)
+			{
+				auto ret = m_watches.at(path);
+				m_watches.erase(path);
+				m_watcher.removeWatch(ret);
+			}
+		}
+
+		inline void removeWatch(const WatchID& id)
+		{
+			for (auto it : m_watches)
+			{
+				if (it.second == id)
+				{
+					m_watches.erase(it.first);
+					m_watcher.removeWatch(id);
+					return;
+				}
+			}
+		}
+
+		inline void update() 
+		{
+			m_watcher.update();
+		}
+
+		inline bool poll(FileWatcherEvent& ev)
+		{
+			//m_watcher.update();
+			if (m_events.size() > 0)
+			{
+				ev = m_events.front();
+				m_events.pop();
+				return true;
+			}
+			return false;
+		}
+
+		inline bool get_events(std::queue<FileWatcherEvent>& dest)
+		{
+			if (m_events.size() > 0)
+			{
+				dest.swap(m_events);
+				return true;
+			}
+			return false;
+		}
+
+	private:
+		FileWatcher m_watcher;
+		Listener m_listener;
+		std::queue<FileWatcherEvent> m_events;
+		std::unordered_map<std::string, WatchID> m_watches;
 	};
 
 
