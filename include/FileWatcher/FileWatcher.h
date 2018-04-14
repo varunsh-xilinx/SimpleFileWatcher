@@ -153,127 +153,6 @@ namespace FW
 		Actions::Action action;
 	};
 
-	// TODO: Add a second mutex to separate access to the underlying filewatcher from the queue
-	class PollingFileWatcher
-	{
-		class Listener : public FileWatchListener
-		{
-		public:
-			inline Listener(PollingFileWatcher& watcher) : m_watcher(watcher){}
-
-		public:
-			virtual void handleFileAction(WatchID watchid, const String& dir, const String& filename, Action action) override final;
-		
-		private:
-			PollingFileWatcher& m_watcher;
-		};
-
-		static void thread(PollingFileWatcher* watcher)
-		{
-			while (watcher->m_running)
-			{
-				std::lock_guard<std::mutex> lock(watcher->m_mutex);
-				watcher->m_watcher.update();
-				std::this_thread::sleep_for(std::chrono::milliseconds(watcher->m_updaterate));
-			}
-		}
-
-		friend class PollingFileWatcher::Listener;
-	public:
-		inline PollingFileWatcher() :
-			m_running(true), m_listener(*this), m_updaterate(50)
-		{
-			m_thread = std::thread(thread, this);
-		}
-
-		inline ~PollingFileWatcher()
-		{
-			m_running = false;
-			m_thread.join();
-		}
-
-	public:
-		inline WatchID addWatch(const String& path, bool recursive)
-		{
-			std::lock_guard<std::mutex> lock(m_mutex);
-			WatchID id = m_watcher.addWatch(path, &m_listener, recursive);
-			m_watches.insert({
-				path,
-				id
-			});
-			return id;
-		}
-
-		inline void removeWatch(const String& path)
-		{
-			std::lock_guard<std::mutex> lock(m_mutex);
-			if (m_watches.count(path) > 0)
-			{
-				std::lock_guard<std::mutex> lock(m_mutex);
-				auto ret = m_watches.at(path);
-				m_watches.erase(path);
-				m_watcher.removeWatch(ret);
-			}
-		}
-
-		inline void removeWatch(const WatchID& id)
-		{
-			std::lock_guard<std::mutex> lock(m_mutex);
-			for (auto it : m_watches)
-			{
-				if (it.second == id)
-				{
-					m_watches.erase(it.first);
-					m_watcher.removeWatch(id);
-					return;
-				}
-			}
-		}
-
-		inline void update()
-		{
-			// no-op
-		}
-
-		inline bool poll(FileWatcherEvent& ev)
-		{
-			if (m_events.size() > 0)
-			{
-				std::lock_guard<std::mutex> lock(m_mutex);
-				ev = m_events.front();
-				m_events.pop();
-				return true;
-			}
-			return false;
-		}
-
-		inline bool get_events(std::queue<FileWatcherEvent>& dest)
-		{
-			if (m_events.size() > 0)
-			{
-				std::lock_guard<std::mutex> lock(m_mutex);
-				dest.swap(m_events);
-				return true;
-			}
-			return false;
-		}
-
-		inline void setThreadFrequency(int ms = 50)
-		{
-			m_updaterate = ms;
-		}
-
-	private:
-		bool m_running;
-		FileWatcher m_watcher;
-		Listener m_listener;
-		std::mutex m_mutex;
-		std::thread m_thread;
-		std::queue<FileWatcherEvent> m_events;
-		std::unordered_map<std::string, WatchID> m_watches;
-		int m_updaterate;
-	};
-
 	class SingleThreadedPollingFileWatcher
 	{
 		class Listener : public FileWatchListener
@@ -367,6 +246,80 @@ namespace FW
 		std::unordered_map<std::string, WatchID> m_watches;
 	};
 
+	class PollingFileWatcher
+	{
+		static void thread(PollingFileWatcher* watcher)
+		{
+			while (watcher->m_running)
+			{
+				{
+					std::lock_guard<std::mutex> lock(watcher->m_mutex);
+					watcher->m_watcher.update();
+				}
+				std::this_thread::sleep_for(std::chrono::milliseconds(watcher->m_updaterate));
+			}
+		}
+	public:
+		inline PollingFileWatcher() :
+			m_running(true), m_updaterate(50)
+		{
+			m_thread = std::thread(thread, this);
+		}
+
+		inline ~PollingFileWatcher()
+		{
+			m_running = false;
+			m_thread.join();
+		}
+
+	public:
+		inline WatchID addWatch(const String& path, bool recursive)
+		{
+			std::lock_guard<std::mutex> lock(m_mutex);
+			return m_watcher.addWatch(path, recursive);
+		}
+
+		inline void removeWatch(const String& path)
+		{
+			std::lock_guard<std::mutex> lock(m_mutex);
+			m_watcher.removeWatch(path);
+		}
+
+		inline void removeWatch(const WatchID& id)
+		{
+			std::lock_guard<std::mutex> lock(m_mutex);
+			m_watcher.removeWatch(id);
+		}
+
+		inline void update()
+		{
+			// no-op
+		}
+
+		inline bool poll(FileWatcherEvent& ev)
+		{
+			std::lock_guard<std::mutex> lock(m_mutex);
+			return m_watcher.poll(ev);
+		}
+
+		inline bool get_events(std::queue<FileWatcherEvent>& dest)
+		{
+			std::lock_guard<std::mutex> lock(m_mutex);
+			return m_watcher.get_events(dest);
+		}
+
+		inline void setThreadFrequency(int ms = 50)
+		{
+			m_updaterate = ms;
+		}
+
+	private:
+		bool m_running;
+		SingleThreadedPollingFileWatcher m_watcher;
+		std::mutex m_mutex;
+		std::thread m_thread;
+		int m_updaterate;
+	};
 
 };//namespace FW
 
