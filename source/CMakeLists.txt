@@ -11,8 +11,6 @@ if (WIN32)
 		"${CMAKE_CURRENT_SOURCE_DIR}/FileWatcher.cpp"
 		"${CMAKE_CURRENT_SOURCE_DIR}/FileWatcherWin32.cpp"
 	)
-	
-	add_definitions(-DMINGINE_WIN32)
 ELSEIF(UNIX)
 	set(
 		SFW_SOURCES 
@@ -27,9 +25,9 @@ ELSEIF(APPLE)
 	)
 ENDIF()
 
-add_library(sfw_lib ${SFW_SOURCES})
-
-include_directories(
+add_library(sfw_lib STATIC ${SFW_SOURCES})
+target_include_directories(
 	sfw_lib
+	PUBLIC
 	${SFW_INCLUDE_DIR}
 )
