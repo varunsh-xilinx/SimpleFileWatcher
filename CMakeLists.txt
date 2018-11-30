@@ -6,7 +6,7 @@ add_subdirectory("source")
 
 option(SFW_WITH_TEST "Build with demo app" off)
 if (SFW_WITH_TEST)
-add_executable(sfw_test "SimpleDemo.cpp")
+    add_executable(sfw_test "SimpleDemo.cpp")
     target_link_libraries(sfw_test PUBLIC sfw_lib)
     target_include_directories(sfw_test ${SFW_INCLUDE_DIR})
 endif()
