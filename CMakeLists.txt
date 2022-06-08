@@ -10,3 +10,14 @@ if (SFW_WITH_TEST)
     target_link_libraries(sfw_test PUBLIC sfw_lib)
     target_include_directories(sfw_test ${SFW_INCLUDE_DIR})
 endif()
+
+install(TARGETS sfw_lib EXPORT sfw_lib_Targets
+    INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+)
+
+install(
+    DIRECTORY "include/"
+    TYPE INCLUDE
+)

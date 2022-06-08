@@ -48,5 +48,7 @@ Contact: james@jameswynn.com
 Fixes and Buffered/AsyncFileWatcher by Ian Diaz
 Contact: shadowndacorner@gmail.com
 
+CMake install target by Varun Sharma
+
 James Wynn's original code can be located at:
-http://simplefilewatcher.googlecode.com
+http://code.google.com/p/simplefilewatcher/
