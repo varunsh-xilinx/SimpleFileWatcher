@@ -37,7 +37,7 @@ WAPI_STR to_w_str(const std::string& str)
 {
 #ifdef WIN_USE_WSTR
 	WAPI_STR ret(str.length(), '0');
-	
+
 	for (size_t i = 0; i < str.length(); ++i)
 		ret[i] = str[i];
 
@@ -83,7 +83,8 @@ namespace FW
 		bool mStopNow;
 		FileWatcherImpl* mFileWatcher;
 		FileWatchListener* mFileWatchListener;
-		char* mDirName;
+		TCHAR* mDirName;
+
 		WatchID mWatchid;
 		bool mIsRecursive;
 	};
@@ -97,7 +98,7 @@ namespace FW
 	void CALLBACK WatchCallback(DWORD dwErrorCode, DWORD dwNumberOfBytesTransfered, LPOVERLAPPED lpOverlapped)
 	{
 		TCHAR szFile[MAX_PATH];
-		
+
 		PFILE_NOTIFY_INFORMATION pNotify;
 		WatchStruct* pWatch = (WatchStruct*) lpOverlapped;
 		size_t offset = 0;
@@ -163,7 +164,7 @@ namespace FW
 
 			CloseHandle(pWatch->mOverlapped.hEvent);
 			CloseHandle(pWatch->mDirHandle);
-			delete pWatch->mDirName;
+			delete [] pWatch->mDirName;
 			HeapFree(GetProcessHeap(), 0, pWatch);
 		}
 	}
@@ -176,7 +177,7 @@ namespace FW
 		pWatch = static_cast<WatchStruct*>(HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, ptrsize));
 
 		pWatch->mDirHandle = CreateFile(szDirectory, FILE_LIST_DIRECTORY,
-			FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, 
+			FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
 			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, NULL);
 
 		if (pWatch->mDirHandle != INVALID_HANDLE_VALUE)
@@ -225,8 +226,8 @@ namespace FW
 	{
 		WatchID watchid = ++mLastWatchID;
 
-		WatchStruct* watch = CreateWatch(to_w_str(directory).c_str(), recursive,
-			FILE_NOTIFY_CHANGE_CREATION | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_FILE_NAME);
+		WatchStruct* watch = CreateWatch(directory.c_str(), recursive,
+			FILE_NOTIFY_CHANGE_CREATION | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE);
 
 		if(!watch)
 			throw FileNotFoundException(directory);
@@ -234,8 +235,8 @@ namespace FW
 		watch->mWatchid = watchid;
 		watch->mFileWatcher = this;
 		watch->mFileWatchListener = watcher;
-		watch->mDirName = new char[directory.length()+1];
-		strcpy(watch->mDirName, directory.c_str());
+		watch->mDirName = new TCHAR[directory.length()+1];
+		std::memcpy(watch->mDirName, directory.c_str(), (directory.length() + 1) * sizeof(TCHAR));
 
 		mWatches.insert(std::make_pair(watchid, watch));
 
